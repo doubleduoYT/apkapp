@@ -7,6 +7,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_BUILD_TOOLS_VERSION: 35.0.0
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,10 +27,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept SDK licenses + install packages (pin build-tools 35)
+      - name: Force build-tools 35 only (remove 36)
         run: |
           yes | sdkmanager --licenses
+          sdkmanager --uninstall "build-tools;36.1.0" || true
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;35.0.0"
+          ls $ANDROID_SDK_ROOT/build-tools
 
       - name: Install Buildozer (venv)
         run: |
