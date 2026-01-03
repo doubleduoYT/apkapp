@@ -16,3 +16,5 @@ android.api = 33
 android.minapi = 21
 android.arch = arm64-v8a
 android.build_tools_version = 35.0.0
+
+android.sdk_path = /usr/local/lib/android/sdk

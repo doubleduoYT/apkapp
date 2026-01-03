@@ -10,7 +10,6 @@ jobs:
     env:
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_BUILD_TOOLS_VERSION: 35.0.0
 
     steps:
       - uses: actions/checkout@v4
@@ -27,12 +26,13 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Force build-tools 35 only (remove 36)
+      - name: Install build-tools 35 + verify aidl
         run: |
           yes | sdkmanager --licenses
           sdkmanager --uninstall "build-tools;36.1.0" || true
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;35.0.0"
-          ls $ANDROID_SDK_ROOT/build-tools
+          ls -la $ANDROID_SDK_ROOT/build-tools || true
+          ls -la $ANDROID_SDK_ROOT/build-tools/35.0.0/aidl
 
       - name: Install Buildozer (venv)
         run: |
@@ -41,9 +41,10 @@ jobs:
           pip install -U pip
           pip install buildozer cython
 
-      - name: Build APK
+      - name: Build APK (force SDK path)
         run: |
           . venv/bin/activate
+          export ANDROIDSDK=$ANDROID_SDK_ROOT
           buildozer -v android debug
 
       - name: Upload APK
