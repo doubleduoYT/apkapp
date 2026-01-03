@@ -20,7 +20,7 @@ jobs:
             libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
             libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl \
             libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev \
-            libffi-dev uuid-dev libffi7 autopoint autoconf automake libtool
+            libffi-dev uuid-dev libffi8 autopoint autoconf automake libtool
       - name: Install Buildozer
         run: pip install --upgrade buildozer
       - name: Accept Android SDK Licenses
