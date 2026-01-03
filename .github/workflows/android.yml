@@ -8,20 +8,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-venv python3-pip git zip unzip openjdk-17-jdk build-essential
-      - name: Build APK with Buildozer (venv)
-        run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pip install -U pip setuptools wheel
-          pip install buildozer cython
-          [ -f buildozer.spec ] || buildozer init
-          buildozer -v android debug
+      - uses: android-actions/setup-android@v3
+      - name: Accept SDK licenses
+        run: yes | sdkmanager --licenses
+      - name: Install SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-33" "build-tools;35.0.0"
+      - name: Build APK
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          buildozer_version: stable
+          command: buildozer android debug
+          workdir: .
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: bin/*.apk
+          path: ${{ steps.buildozer.outputs.filename }}

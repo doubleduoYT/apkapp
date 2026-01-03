@@ -15,3 +15,4 @@ log_level = 2
 android.api = 33
 android.minapi = 21
 android.arch = arm64-v8a
+android.build_tools_version = 35.0.0
