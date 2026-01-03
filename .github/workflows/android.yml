@@ -24,24 +24,19 @@ jobs:
             libffi-dev uuid-dev libffi8 autopoint autoconf automake libtool
       - name: Install Buildozer and Cython
         run: pip install --upgrade buildozer cython==0.29.33
-      - name: Force Mirror System SDK to Buildozer Path
+      - name: Master SDK Structure Fix
         run: |
-          # 1. 라이선스 수락 및 필수 버전 설치
+          # 1. 라이선스 수락 및 API 35 설치
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;35.0.0" "platforms;android-35" "platform-tools" "cmdline-tools;latest"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;35.0.0" "platforms;android-35" "platform-tools"
           
-          # 2. Buildozer가 기대하는 경로 구조를 미리 수동으로 생성
+          # 2. Buildozer 경로에 모든 SDK 구성 요소 강제 링크
           SDK_HOME="/home/runner/.buildozer/android/platform/android-sdk"
           mkdir -p "$SDK_HOME/tools/bin"
           mkdir -p "$SDK_HOME/cmdline-tools"
           
-          # 3. 핵심: sdkmanager를 두 가지 경로(구형/신형) 모두에 링크
-          # 구형 경로 (Buildozer가 체크하는 곳)
           ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "$SDK_HOME/tools/bin/sdkmanager"
-          # 신형 경로
-          ln -sf /usr/local/lib/android/sdk/cmdline-tools "$SDK_HOME/cmdline-tools/latest"
-          
-          # 4. 기타 필수 도구들 링크
+          ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest "$SDK_HOME/cmdline-tools/latest"
           ln -sf /usr/local/lib/android/sdk/build-tools "$SDK_HOME/build-tools"
           ln -sf /usr/local/lib/android/sdk/platform-tools "$SDK_HOME/platform-tools"
           ln -sf /usr/local/lib/android/sdk/platforms "$SDK_HOME/platforms"

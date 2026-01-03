@@ -12,7 +12,7 @@ orientation = portrait
 log_level = 2
 
 [app:android]
-android.api = 33
+android.api = 35
 android.minapi = 21
 android.arch = arm64-v8a
 android.build_tools_version = 35.0.0
