@@ -22,7 +22,7 @@ jobs:
             libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev \
             libffi-dev uuid-dev libffi8 autopoint autoconf automake libtool
       - name: Install Buildozer
-        run: pip install --upgrade buildozer
+        run: pip install --upgrade buildozer cython==0.29.33
       - name: Accept Android SDK Licenses
         run: |
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
