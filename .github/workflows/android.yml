@@ -24,29 +24,33 @@ jobs:
             libffi-dev uuid-dev libffi8 autopoint autoconf automake libtool
       - name: Install Buildozer and Cython
         run: pip install --upgrade buildozer cython==0.29.33
-      - name: Ultimate SDK Path Fix
+      - name: Force Mirror System SDK to Buildozer Path
         run: |
-          # 1. 라이선스 수락 및 필수 도구 설치
+          # 1. 라이선스 수락 및 필수 버전 설치
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;35.0.0" "platforms;android-35" "platform-tools"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;35.0.0" "platforms;android-35" "platform-tools" "cmdline-tools;latest"
           
-          # 2. Buildozer가 원하는 구형 구조(tools/bin) 강제 생성 및 링크
-          # Buildozer가 "tools/bin/sdkmanager"가 없다고 징징대는 문제를 여기서 해결합니다.
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
-          ln -s /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          # 2. Buildozer가 기대하는 경로 구조를 미리 수동으로 생성
+          SDK_HOME="/home/runner/.buildozer/android/platform/android-sdk"
+          mkdir -p "$SDK_HOME/tools/bin"
+          mkdir -p "$SDK_HOME/cmdline-tools"
           
-          # 3. Buildozer가 aidl을 찾을 수 있게 build-tools 경로도 링크
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools
-          ln -s /usr/local/lib/android/sdk/build-tools/35.0.0 /home/runner/.buildozer/android/platform/android-sdk/build-tools/35.0.0
+          # 3. 핵심: sdkmanager를 두 가지 경로(구형/신형) 모두에 링크
+          # 구형 경로 (Buildozer가 체크하는 곳)
+          ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "$SDK_HOME/tools/bin/sdkmanager"
+          # 신형 경로
+          ln -sf /usr/local/lib/android/sdk/cmdline-tools "$SDK_HOME/cmdline-tools/latest"
           
-          # 4. platform-tools 링크
-          ln -s /usr/local/lib/android/sdk/platform-tools /home/runner/.buildozer/android/platform/android-sdk/platform-tools
+          # 4. 기타 필수 도구들 링크
+          ln -sf /usr/local/lib/android/sdk/build-tools "$SDK_HOME/build-tools"
+          ln -sf /usr/local/lib/android/sdk/platform-tools "$SDK_HOME/platform-tools"
+          ln -sf /usr/local/lib/android/sdk/platforms "$SDK_HOME/platforms"
 
       - name: Build with Buildozer
         run: buildozer android debug
         env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
+          ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
           ANT_HOME: /usr/share/ant
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
