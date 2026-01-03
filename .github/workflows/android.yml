@@ -24,19 +24,24 @@ jobs:
             libffi-dev uuid-dev libffi8 autopoint autoconf automake libtool
       - name: Install Buildozer and Cython
         run: pip install --upgrade buildozer cython==0.29.33
-      - name: Force Fix SDK and Aidl Path
+      - name: Ultimate SDK Path Fix
         run: |
-          # 1. 라이선스 수락 및 35.0.0 강제 설치
+          # 1. 라이선스 수락 및 필수 도구 설치
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;35.0.0" "platforms;android-35" "platform-tools"
           
-          # 2. Buildozer가 찾으려 하는 경로에 심볼릭 링크 생성 (가장 중요)
-          # Buildozer는 ~/.buildozer/... 아래에서 aidl을 찾으려 하므로 시스템 SDK를 거기로 연결해버립니다.
+          # 2. Buildozer가 원하는 구형 구조(tools/bin) 강제 생성 및 링크
+          # Buildozer가 "tools/bin/sdkmanager"가 없다고 징징대는 문제를 여기서 해결합니다.
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
+          ln -s /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          
+          # 3. Buildozer가 aidl을 찾을 수 있게 build-tools 경로도 링크
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools
           ln -s /usr/local/lib/android/sdk/build-tools/35.0.0 /home/runner/.buildozer/android/platform/android-sdk/build-tools/35.0.0
           
-          # 3. 추가적으로 platform-tools도 연결
+          # 4. platform-tools 링크
           ln -s /usr/local/lib/android/sdk/platform-tools /home/runner/.buildozer/android/platform/android-sdk/platform-tools
+
       - name: Build with Buildozer
         run: buildozer android debug
         env:
