@@ -1,0 +1,10 @@
++                float f = (Float) a.getAnimatedValue();
++                float eased = f < 0.5f ? f * 2.35f : 1f - (1f - f) * 0.35f;
++                int base = Math.round(start + (end - start) * eased);
++                int jitter = f > 0.9f ? 0 : Math.round(width * random(-0.13f, 0.13f) * (1f - f));
++                scrollTo(base + jitter, 0);
++                if (f > 0.98f) scrollTo(end, 0);
++            });
+             snapAnimator.start();
+         }
+ 
