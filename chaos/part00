@@ -1,0 +1,103 @@
+--- a/README.md
++++ b/README.md
+@@ -23,3 +23,10 @@
+ 2. 홈 버튼을 누른다.
+ 3. `MegaBounce Home`을 선택하고 `항상`을 누른다.
+ 4. 화면 오른쪽 위 `⋮` 또는 아래 `앱 서랍`을 길게 눌러 설정을 연다.
++
++
++## v3.0 Chaos update
++- 모든 주요 UI 애니메이션을 10~20개 랜덤 키프레임으로 변경
++- 앱 실행, 홈 복귀, 스와이프, 폴더, 앱 서랍, 설정, 터치 피드백이 0.1~0.3초 안에 무작위 배율/회전/이동/기울기로 급변
++- 스와이프 중 페이지와 배경이 프레임마다 랜덤하게 흔들림
++- 광과민성/멀미가 있다면 사용하지 않는 것을 권장
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -10,8 +10,8 @@
+         applicationId 'com.hg.megabounce.oneui'
+         minSdk 23
+         targetSdk 35
+-        versionCode 2
+-        versionName '2.0'
++        versionCode 3
++        versionName '3.0-chaos'
+     }
+ 
+     buildTypes {
+--- a/app/src/main/java/com/hg/megabounce/oneui/MainActivity.java
++++ b/app/src/main/java/com/hg/megabounce/oneui/MainActivity.java
+@@ -4,6 +4,7 @@
+ import android.animation.AnimatorListenerAdapter;
+ import android.animation.AnimatorSet;
+ import android.animation.ObjectAnimator;
++import android.animation.PropertyValuesHolder;
+ import android.animation.ValueAnimator;
+ import android.app.Activity;
+ import android.app.AlertDialog;
+@@ -37,6 +38,7 @@
+ import android.view.ViewGroup;
+ import android.view.Window;
+ import android.view.animation.DecelerateInterpolator;
++import android.view.animation.LinearInterpolator;
+ import android.view.animation.OvershootInterpolator;
+ import android.widget.Button;
+ import android.widget.EditText;
+@@ -69,6 +71,7 @@
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
++import java.util.Random;
+ 
+ public class MainActivity extends Activity {
+     private static final int REQUEST_WALLPAPER = 4301;
+@@ -80,6 +83,7 @@
+     private static final String KEY_BOUNCE = "bounce_level";
+ 
+     private final Handler handler = new Handler(Looper.getMainLooper());
++    private final Random chaos = new Random();
+     private final ArrayList<AppEntry> installedApps = new ArrayList<>();
+     private final Map<String, AppEntry> appByPackage = new HashMap<>();
+ 
+@@ -506,13 +510,12 @@
+         });
+         tile.setOnTouchListener((v, event) -> {
+             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+-                v.animate().scaleX(0.66f).scaleY(0.66f).rotation(-5f)
+-                        .setDuration(70).start();
++                chaosTo(v, random(0.42f, 1.58f), random(0.38f, 1.62f),
++                        random(-42f, 42f), random(-18f, 18f), random(-18f, 18f), 1f,
++                        45, 95, 0.28f, 1.95f, 58f, 26f, null);
+             } else if (event.getActionMasked() == MotionEvent.ACTION_UP ||
+                     event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+-                v.animate().scaleX(1f).scaleY(1f).rotation(0f)
+-                        .setInterpolator(new OvershootInterpolator(overshoot(1.7f)))
+-                        .setDuration(260 + bounceLevel * 70L).start();
++                chaosSettle(v, 75, 170, 0.24f, 2.35f, 78f, 34f, null);
+             }
+             return false;
+         });
+@@ -616,8 +619,8 @@
+     }
+ 
+     private void showItemMenu(Item item, CellRef ref, View anchor) {
+-        anchor.animate().scaleX(1.25f).scaleY(1.25f).rotation(7f)
+-                .setInterpolator(new OvershootInterpolator(4f)).setDuration(220).start();
++        chaosTo(anchor, 1.25f, 1.25f, random(-18f, 18f), 0f, 0f, 1f,
++                65, 145, 0.35f, 2.45f, 85f, 30f, null);
+         String[] options = item.isFolder()
+                 ? new String[]{"폴더 열기", "앱으로 바꾸기", "다른 아이콘과 위치 바꾸기", "빈칸으로 만들기"}
+                 : new String[]{"앱으로 바꾸기", "다른 아이콘과 위치 바꾸기", "빈칸으로 만들기"};
+@@ -642,8 +645,8 @@
+                         }
+                     }
+                 })
+-                .setOnDismissListener(d -> anchor.animate().scaleX(1f).scaleY(1f).rotation(0f)
+-                        .setInterpolator(new OvershootInterpolator(3f)).setDuration(300).start())
++                .setOnDismissListener(d -> chaosSettle(anchor, 70, 175,
++                        0.25f, 2.65f, 95f, 36f, null))
+                 .show();
+     }
+ 
+@@ -660,35 +663,29 @@
+                 entry.info.activityInfo.packageName, entry.info.activityInfo.name));
+       
