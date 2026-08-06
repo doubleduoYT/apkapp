@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - oneui-megabounce-20260806
+    paths:
+      - READY
   workflow_dispatch:
 
 jobs:
@@ -24,8 +26,9 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract project
+      - name: Reconstruct and extract project
         run: |
+          cat chunks/part* | base64 -d > OneUIMegaBounce-source.zip
           mkdir work
           unzip -q OneUIMegaBounce-source.zip -d work
 
