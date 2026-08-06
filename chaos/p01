@@ -1,0 +1,104 @@
+-                ObjectAnimator.ofFloat(tile, View.ALPHA, 1f, 0.05f),
+-                ObjectAnimator.ofFloat(shell, View.SCALE_X, 1f, 0.82f),
+-                ObjectAnimator.ofFloat(shell, View.SCALE_Y, 1f, 0.82f),
+-                ObjectAnimator.ofFloat(wallpaperView, View.SCALE_X, wallpaperView.getScaleX(), 1.28f),
+-                ObjectAnimator.ofFloat(wallpaperView, View.SCALE_Y, wallpaperView.getScaleY(), 1.28f)
+-        );
+-        burst.setInterpolator(new OvershootInterpolator(overshoot(2.4f)));
+-        burst.setDuration(230 + bounceLevel * 45L);
+-        burst.addListener(new AnimatorListenerAdapter() {
+-            @Override
+-            public void onAnimationEnd(Animator animation) {
+-                try {
+-                    launchedExternal = true;
+-                    startActivity(intent);
+-                } catch (Exception e) {
+-                    launchedExternal = false;
+-                    Toast.makeText(MainActivity.this, "앱을 열 수 없어", Toast.LENGTH_SHORT).show();
+-                    rebuildPages();
+-                    playReturnBounce(false);
+-                }
++        final int[] completed = {0};
++        Runnable launch = () -> {
++            completed[0]++;
++            if (completed[0] < 2) return;
++            try {
++                launchedExternal = true;
++                startActivity(intent);
++            } catch (Exception e) {
++                launchedExternal = false;
++                Toast.makeText(MainActivity.this, "앱을 열 수 없어", Toast.LENGTH_SHORT).show();
++                rebuildPages();
++                playReturnBounce(false);
+             }
+-        });
+-        burst.start();
++        };
++        chaosTo(tile, random(2.8f, 4.9f), random(0.15f, 4.6f), random(-170f, 170f),
++                random(-90f, 90f), random(-120f, 80f), 0.02f,
++                95, 185, 0.08f, 5.4f, 210f, 120f, launch);
++        chaosTo(shell, random(0.42f, 1.45f), random(0.35f, 1.35f), random(-35f, 35f),
++                random(-30f, 30f), random(-55f, 55f), random(0.2f, 0.7f),
++                90, 180, 0.22f, 1.9f, 65f, 70f, launch);
++        chaosTo(wallpaperView, random(0.8f, 1.9f), random(0.75f, 2.0f),
++                random(-18f, 18f), random(-36f, 36f), random(-28f, 28f), 1f,
++                85, 175, 0.65f, 2.25f, 30f, 48f, null);
+     }
+ 
+     private void launchFirstAvailable(String... packages) {
+@@ -751,15 +748,16 @@
+ 
+         overlay.setOnClickListener(v -> closeFolder());
+         panel.setOnClickListener(v -> { });
+-        source.animate().scaleX(2.0f).scaleY(2.0f).alpha(0.15f)
+-                .setDuration(180).start();
+-        panel.setScaleX(0.18f);
+-        panel.setScaleY(0.18f);
+-        panel.setRotation(-9f);
+-        panel.setAlpha(0.1f);
+-        panel.animate().scaleX(1f).scaleY(1f).rotation(0f).alpha(1f)
+-                .setInterpolator(new OvershootInterpolator(overshoot(3.4f)))
+-                .setDuration(520 + bounceLevel * 90L).start();
++        chaosTo(source, random(1.6f, 3.5f), random(0.2f, 3.1f), random(-120f, 120f),
++                random(-42f, 42f), random(-42f, 42f), 0.12f,
++                70, 145, 0.12f, 4.2f, 160f, 55f, null);
++        panel.setScaleX(random(0.08f, 2.4f));
++        panel.setScaleY(random(0.08f, 2.4f));
++        panel.setRotation(random(-90f, 90f));
++        panel.setTranslationX(dp(random(-80f, 80f)));
++        panel.setTranslationY(dp(random(-120f, 120f)));
++        panel.setAlpha(0.08f);
++        chaosSettle(panel, 105, 230, 0.08f, 3.4f, 145f, 115f, null);
+     }
+ 
+     private View makeFolderChild(Item item) {
+@@ -782,8 +780,10 @@
+         if (folderOverlay == null) return;
+         View target = folderOverlay;
+         folderOverlay = null;
+-        target.animate().alpha(0f).scaleX(1.18f).scaleY(1.18f)
+-                .setDuration(180).withEndAction(() -> root.removeView(target)).start();
++        chaosTo(target, random(0.04f, 3.5f), random(0.04f, 3.5f), random(-180f, 180f),
++                random(-120f, 120f), random(-180f, 180f), 0f,
++                70, 150, 0.02f, 4.2f, 220f, 190f,
++                () -> root.removeView(target));
+     }
+ 
+     private void showAppDrawer(CellRef target) {
+@@ -851,13 +851,13 @@
+         overlay.setOnClickListener(v -> closeDrawer());
+         panel.setOnClickListener(v -> { });
+         panel.setPivotY(panelParams.height);
+-        panel.setScaleY(0.16f);
+-        panel.setScaleX(0.78f);
+-        panel.setTranslationY(dp(320));
+-        panel.setAlpha(0.15f);
+-        panel.animate().scaleY(1f).scaleX(1f).translationY(0).alpha(1f)
+-                .setInterpolator(new OvershootInterpolator(overshoot(3.7f)))
+-                .setDuration(560 + bounceLevel * 100L).start();
++        panel.setScaleY(random(0.05f, 2.7f));
++        panel.setScaleX(random(0.08f, 2.4f));
++        panel.setTranslationX(dp(random(-100f, 100f)));
++        panel.setTranslationY(dp(random(-340f, 420f)));
++        panel.setRotation(random(-120f, 120f));
++        panel.setAlpha(0.08f);
