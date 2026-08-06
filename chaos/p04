@@ -1,0 +1,97 @@
++                             float endTranslationXdp, float endTranslationYdp, float endAlpha,
++                             int minDuration, int maxDuration,
++                             float minScale, float maxScale, float rotationRange,
++                             float translationRangeDp, Runnable endAction) {
++        if (view == null) return null;
++        view.animate().cancel();
++        int points = randomInt(10, 20);
++        float[] sx = randomTrack(view.getScaleX(), minScale, maxScale, endScaleX, points);
++        float[] sy = randomTrack(view.getScaleY(), minScale, maxScale, endScaleY, points);
++        float[] rot = randomTrack(view.getRotation(), -rotationRange, rotationRange, endRotation, points);
++        float[] rotX = randomTrack(view.getRotationX(), -rotationRange * 0.45f,
++                rotationRange * 0.45f, 0f, points);
++        float[] rotY = randomTrack(view.getRotationY(), -rotationRange * 0.45f,
++                rotationRange * 0.45f, 0f, points);
++        float rangePx = dp(translationRangeDp);
++        float[] tx = randomTrack(view.getTranslationX(), -rangePx, rangePx,
++                dp(endTranslationXdp), points);
++        float[] ty = randomTrack(view.getTranslationY(), -rangePx, rangePx,
++                dp(endTranslationYdp), points);
++        float[] alpha = randomTrack(view.getAlpha(), 0.08f, 1f, endAlpha, points);
++
++        ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(view,
++                PropertyValuesHolder.ofFloat(View.SCALE_X, sx),
++                PropertyValuesHolder.ofFloat(View.SCALE_Y, sy),
++                PropertyValuesHolder.ofFloat(View.ROTATION, rot),
++                PropertyValuesHolder.ofFloat(View.ROTATION_X, rotX),
++                PropertyValuesHolder.ofFloat(View.ROTATION_Y, rotY),
++                PropertyValuesHolder.ofFloat(View.TRANSLATION_X, tx),
++                PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, ty),
++                PropertyValuesHolder.ofFloat(View.ALPHA, alpha));
++        animator.setDuration(randomInt(minDuration, Math.max(minDuration + 1, maxDuration)));
++        animator.setInterpolator(new LinearInterpolator());
++        if (endAction != null) {
++            animator.addListener(new AnimatorListenerAdapter() {
++                @Override public void onAnimationEnd(Animator animation) { endAction.run(); }
++            });
++        }
++        animator.start();
++        return animator;
++    }
++
++    private Animator chaosSettle(View view, int minDuration, int maxDuration,
++                                 float minScale, float maxScale, float rotationRange,
++                                 float translationRangeDp, Runnable endAction) {
++        return chaosTo(view, 1f, 1f, 0f, 0f, 0f, 1f,
++                minDuration, maxDuration, minScale, maxScale,
++                rotationRange, translationRangeDp, endAction);
++    }
++
++    private float[] randomTrack(float start, float min, float max, float end, int points) {
++        float[] values = new float[Math.max(3, points)];
++        values[0] = start;
++        for (int i = 1; i < values.length - 1; i++) values[i] = random(min, max);
++        values[values.length - 1] = end;
++        return values;
++    }
++
++    private float random(float min, float max) {
++        return min + chaos.nextFloat() * (max - min);
++    }
++
++    private int randomInt(int min, int maxExclusive) {
++        if (maxExclusive <= min) return min;
++        return min + chaos.nextInt(maxExclusive - min);
++    }
++
++    private float clampFloat(float value, float min, float max) {
++        return Math.max(min, Math.min(max, value));
++    }
++
+     private void updateClockAndBattery() {
+         Locale locale = Locale.getDefault();
+         if (clockView != null) clockView.setText(new SimpleDateFormat("HH:mm", locale).format(new Date()));
+@@ -1363,8 +1454,8 @@
+     }
+ 
+     private String bounceLabel() {
+-        String name = bounceLevel == 1 ? "강함" : bounceLevel == 2 ? "극심" : "고장난 수준";
+-        return "바운스 강도: " + name;
++        String name = bounceLevel == 1 ? "랜덤 난장판" : bounceLevel == 2 ? "초고속 랜덤" : "정신 나간 초고속 랜덤";
++        return "애니메이션: " + name;
+     }
+ 
+     private String iconSizeName() {
+@@ -1594,10 +1685,18 @@
+                 return;
+             }
+             if (snapAnimator != null) snapAnimator.cancel();
+-            snapAnimator = ValueAnimator.ofInt(getScrollX(), end);
+-            snapAnimator.setDuration(430 + bounceLevel * 110L);
+-            snapAnimator.setInterpolator(new OvershootInterpolator(overshoot(3.1f)));
+-            snapAnimator.addUpdateListener(a -> scrollTo((Integer) a.getAnimatedValue(), 0));
++            final int start = getScrollX();
++            snapAnimator = ValueAnimator.ofFloat(0f, 1f);
++            snapAnimator.setDuration(randomInt(90, 190));
++            snapAnimator.setInterpolator(new LinearInterpolator());
++            snapAnimator.addUpdateListener(a -> {
