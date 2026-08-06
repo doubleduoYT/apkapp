@@ -7,6 +7,12 @@ on:
     paths:
       - 'megabounce-launcher/**'
       - '.github/workflows/megabounce-launcher.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'megabounce-launcher/**'
+      - '.github/workflows/megabounce-launcher.yml'
   workflow_dispatch:
 
 jobs:
