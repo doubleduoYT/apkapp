@@ -7,6 +7,7 @@ on:
     paths:
       - 'READY'
       - 'chunks/**'
+      - 'chaos/**'
       - '.github/workflows/build-oneui-megabounce.yml'
   pull_request:
     branches:
@@ -14,6 +15,7 @@ on:
     paths:
       - 'READY'
       - 'chunks/**'
+      - 'chaos/**'
       - '.github/workflows/build-oneui-megabounce.yml'
   workflow_dispatch:
 
@@ -42,17 +44,25 @@ jobs:
           mkdir work
           unzip -q OneUIMegaBounce-source.zip -d work
 
+      - name: Apply chaos animation patch
+        run: |
+          cat chaos/p0* > chaos.patch
+          cd work/OneUIMegaBounce-source
+          patch -p1 < "$GITHUB_WORKSPACE/chaos.patch"
+          grep -q "versionName '3.0-chaos'" app/build.gradle
+          grep -q "private Animator chaosTo" app/src/main/java/com/hg/megabounce/oneui/MainActivity.java
+
       - name: Build debug APK
         run: |
           cd work/OneUIMegaBounce-source
           gradle assembleDebug --stacktrace
-          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/OneUI-MegaBounce-Home.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/OneUI-MegaBounce-Chaos.apk"
           cd "$GITHUB_WORKSPACE"
-          unzip -t OneUI-MegaBounce-Home.apk
+          unzip -t OneUI-MegaBounce-Chaos.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: OneUI-MegaBounce-Home
-          path: OneUI-MegaBounce-Home.apk
+          name: OneUI-MegaBounce-Chaos
+          path: OneUI-MegaBounce-Chaos.apk
           if-no-files-found: error
