@@ -5,7 +5,16 @@ on:
     branches:
       - oneui-megabounce-20260806
     paths:
-      - READY
+      - 'READY'
+      - 'chunks/**'
+      - '.github/workflows/build-oneui-megabounce.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'READY'
+      - 'chunks/**'
+      - '.github/workflows/build-oneui-megabounce.yml'
   workflow_dispatch:
 
 jobs:
@@ -29,6 +38,7 @@ jobs:
       - name: Reconstruct and extract project
         run: |
           cat chunks/part* | base64 -d > OneUIMegaBounce-source.zip
+          unzip -t OneUIMegaBounce-source.zip
           mkdir work
           unzip -q OneUIMegaBounce-source.zip -d work
 
