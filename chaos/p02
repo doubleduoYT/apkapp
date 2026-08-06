@@ -1,0 +1,97 @@
++        chaosSettle(panel, 115, 245, 0.04f, 3.8f, 170f, 330f, null);
+     }
+ 
+     private void renderDrawerGrid(GridLayout grid, String query) {
+@@ -930,8 +930,10 @@
+         View target = drawerOverlay;
+         drawerOverlay = null;
+         replacementTarget = null;
+-        target.animate().alpha(0f).scaleX(1.08f).scaleY(1.08f)
+-                .setDuration(190).withEndAction(() -> root.removeView(target)).start();
++        chaosTo(target, random(0.03f, 3.2f), random(0.03f, 3.2f), random(-180f, 180f),
++                random(-130f, 130f), random(-190f, 190f), 0f,
++                70, 155, 0.02f, 4.1f, 220f, 200f,
++                () -> root.removeView(target));
+     }
+ 
+     private void showSettings() {
+@@ -1003,12 +1005,12 @@
+         dialog.setOnShowListener(d -> {
+             View decor = dialog.getWindow() == null ? null : dialog.getWindow().getDecorView();
+             if (decor != null) {
+-                decor.setScaleX(0.25f);
+-                decor.setScaleY(0.25f);
+-                decor.setRotation(-7f);
+-                decor.animate().scaleX(1f).scaleY(1f).rotation(0f)
+-                        .setInterpolator(new OvershootInterpolator(overshoot(3.2f)))
+-                        .setDuration(520 + bounceLevel * 70L).start();
++                decor.setScaleX(random(0.04f, 2.8f));
++                decor.setScaleY(random(0.04f, 2.8f));
++                decor.setRotation(random(-150f, 150f));
++                decor.setTranslationX(dp(random(-90f, 90f)));
++                decor.setTranslationY(dp(random(-120f, 120f)));
++                chaosSettle(decor, 110, 230, 0.03f, 3.6f, 180f, 130f, null);
+             }
+         });
+         dialog.show();
+@@ -1133,17 +1135,25 @@
+             View page = pageStrip.getChildAt(i);
+             float distance = (page.getLeft() - scrollX) / (float) width;
+             float abs = Math.min(1f, Math.abs(distance));
+-            float scale = 1f - abs * (0.09f + bounceLevel * 0.018f);
+-            page.setPivotX(distance < 0 ? page.getWidth() : 0);
+-            page.setPivotY(page.getHeight() * 0.55f);
+-            page.setScaleX(scale);
+-            page.setScaleY(scale);
+-            page.setRotationY(-distance * (8f + bounceLevel * 5f));
+-            page.setRotation(distance * (bounceLevel * 1.5f));
+-            page.setTranslationY(abs * dp(16 + bounceLevel * 7));
+-            page.setAlpha(1f - abs * 0.18f);
+-        }
+-        wallpaperView.setTranslationX(-scrollX * (0.045f + bounceLevel * 0.012f));
++            float glitch = 0.16f + bounceLevel * 0.07f;
++            float scaleX = 1f - abs * random(0.03f, 0.25f) + random(-glitch, glitch);
++            float scaleY = 1f - abs * random(0.03f, 0.25f) + random(-glitch, glitch);
++            page.setPivotX(random(0f, Math.max(1f, page.getWidth())));
++            page.setPivotY(random(0f, Math.max(1f, page.getHeight())));
++            page.setScaleX(clampFloat(scaleX, 0.45f, 1.7f));
++            page.setScaleY(clampFloat(scaleY, 0.45f, 1.7f));
++            page.setRotationY(-distance * random(8f, 42f) + random(-18f, 18f));
++            page.setRotationX(random(-14f, 14f));
++            page.setRotation(distance * random(-18f, 18f) + random(-14f, 14f));
++            page.setTranslationX(dp(random(-14f, 14f)));
++            page.setTranslationY(abs * dp(random(8f, 48f)) + dp(random(-18f, 18f)));
++            page.setAlpha(clampFloat(1f - abs * random(0.05f, 0.32f) + random(-0.12f, 0.08f), 0.45f, 1f));
++        }
++        wallpaperView.setTranslationX(-scrollX * random(0.025f, 0.12f) + dp(random(-9f, 9f)));
++        wallpaperView.setTranslationY(dp(random(-7f, 7f)));
++        wallpaperView.setRotation(random(-2.8f, 2.8f));
++        wallpaperView.setScaleX(random(1.01f, 1.22f));
++        wallpaperView.setScaleY(random(1.01f, 1.22f));
+         float pagePosition = scrollX / (float) width;
+         int rounded = Math.round(pagePosition);
+         if (rounded != currentPage && rounded >= 0 && rounded <= 1) {
+@@ -1164,73 +1174,154 @@
+             lp.setMargins(dp(4), 0, dp(4), 0);
+             indicator.addView(dot, lp);
+             if (i == currentPage) {
+-                dot.setScaleX(0.15f);
+-                dot.animate().scaleX(1f)
+-                        .setInterpolator(new OvershootInterpolator(overshoot(2.6f)))
+-                        .setDuration(310).start();
++                dot.setScaleX(random(0.05f, 2.2f));
++                dot.setScaleY(random(0.2f, 2.0f));
++                chaosSettle(dot, 60, 140, 0.04f, 2.8f, 85f, 18f, null);
+             }
+         }
+     }
+ 
+     private void playReturnBounce(boolean initial) {
+-        shell.setAlpha(initial ? 0.1f : 0.35f);
+-        shell.setScaleX(initial ? 0.22f : 0.36f);
+-        shell.setScaleY(initial ? 0.22f : 0.36f);
+-        shell.setRotation(initial ? -8f : 8f);
+-        shell.setTranslationY(initial ? dp(180) : dp(-120));
+-        wallpaperView.setScaleX(1.36f);
+-        wallpaperView.setScaleY(1.36f);
+-
