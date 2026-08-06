@@ -1,0 +1,104 @@
+-        shell.animate().alpha(1f).scaleX(1f).scaleY(1f).rotation(0f).translationY(0)
+-                .setInterpolator(new OvershootInterpolator(overshoot(initial ? 4.0f : 5.2f)))
+-                .setDuration((initial ? 720 : 620) + bounceLevel * 110L).start();
+-        wallpaperView.animate().scaleX(1.08f).scaleY(1.08f)
+-                .setInterpolator(new OvershootInterpolator(overshoot(2.9f)))
+-                .setDuration(780 + bounceLevel * 110L).start();
++        shell.animate().cancel();
++        wallpaperView.animate().cancel();
++        shell.setAlpha(initial ? 0.06f : 0.18f);
++        shell.setScaleX(random(0.04f, 2.8f));
++        shell.setScaleY(random(0.04f, 2.8f));
++        shell.setRotation(random(-160f, 160f));
++        shell.setRotationX(random(-70f, 70f));
++        shell.setRotationY(random(-70f, 70f));
++        shell.setTranslationX(dp(random(-140f, 140f)));
++        shell.setTranslationY(dp(random(-230f, 230f)));
++        wallpaperView.setScaleX(random(0.75f, 2.4f));
++        wallpaperView.setScaleY(random(0.75f, 2.4f));
++        wallpaperView.setRotation(random(-28f, 28f));
++
++        chaosSettle(shell, initial ? 170 : 115, initial ? 330 : 245,
++                0.025f, 4.2f, 210f, 230f, null);
++        chaosTo(wallpaperView, 1.08f, 1.08f, 0f, 0f, 0f, 1f,
++                initial ? 160 : 110, initial ? 310 : 235,
++                0.55f, 2.8f, 48f, 90f, null);
++        chaosChildren(shell, initial ? 20 : 8);
+     }
+ 
+     private void hugeFeedbackBounce() {
+-        shell.animate().cancel();
+-        shell.setScaleX(0.62f);
+-        shell.setScaleY(0.62f);
+-        shell.setRotation(-5f * bounceLevel);
+-        shell.animate().scaleX(1f).scaleY(1f).rotation(0f)
+-                .setInterpolator(new OvershootInterpolator(overshoot(5.5f)))
+-                .setDuration(650 + bounceLevel * 100L).start();
++        chaosSettle(shell, 95, 210, 0.04f, 3.9f, 180f, 155f, null);
++        chaosTo(wallpaperView, 1.08f, 1.08f, 0f, 0f, 0f, 1f,
++                85, 190, 0.55f, 2.45f, 35f, 70f, null);
++        chaosChildren(shell, 6);
+     }
+ 
+     private void pulseWholeLauncher() {
+-        AnimatorSet set = new AnimatorSet();
+-        set.playTogether(
+-                ObjectAnimator.ofFloat(shell, View.SCALE_X, 1f, 1.23f, 0.78f, 1f),
+-                ObjectAnimator.ofFloat(shell, View.SCALE_Y, 1f, 0.72f, 1.29f, 1f),
+-                ObjectAnimator.ofFloat(shell, View.ROTATION, 0f, -5f, 6f, 0f),
+-                ObjectAnimator.ofFloat(wallpaperView, View.SCALE_X, 1.08f, 1.23f, 1.08f),
+-                ObjectAnimator.ofFloat(wallpaperView, View.SCALE_Y, 1.08f, 1.23f, 1.08f)
+-        );
+-        set.setInterpolator(new OvershootInterpolator(overshoot(2.8f)));
+-        set.setDuration(740 + bounceLevel * 80L);
+-        set.start();
++        chaosSettle(shell, 110, 235, 0.03f, 4.1f, 210f, 190f, null);
++        chaosTo(wallpaperView, 1.08f, 1.08f, 0f, 0f, 0f, 1f,
++                100, 225, 0.48f, 2.8f, 55f, 100f, null);
++        chaosChildren(shell, 0);
+     }
+ 
+     private void bounceCard(View view) {
+-        view.animate().cancel();
+-        view.setScaleX(0.58f);
+-        view.setScaleY(1.55f);
+-        view.setRotation(-6f);
+-        view.animate().scaleX(1f).scaleY(1f).rotation(0f)
+-                .setInterpolator(new OvershootInterpolator(overshoot(4.4f)))
+-                .setDuration(540 + bounceLevel * 70L).start();
++        chaosSettle(view, 70, 165, 0.03f, 3.8f, 190f, 100f, null);
+     }
+ 
+     private void startWiggle(View v) {
+-        ObjectAnimator wiggle = ObjectAnimator.ofFloat(v, View.ROTATION, -5f, 5f);
+-        wiggle.setDuration(110);
+-        wiggle.setRepeatMode(ValueAnimator.REVERSE);
++        ValueAnimator wiggle = ValueAnimator.ofFloat(0f, 1f);
++        wiggle.setDuration(randomInt(38, 74));
+         wiggle.setRepeatCount(ValueAnimator.INFINITE);
++        wiggle.setInterpolator(new LinearInterpolator());
++        wiggle.addUpdateListener(a -> {
++            if (((Float) a.getAnimatedValue()) < 0.45f) return;
++            v.setRotation(random(-19f, 19f));
++            v.setRotationX(random(-12f, 12f));
++            v.setRotationY(random(-12f, 12f));
++            v.setScaleX(random(0.78f, 1.28f));
++            v.setScaleY(random(0.78f, 1.28f));
++            v.setTranslationX(dp(random(-4f, 4f)));
++            v.setTranslationY(dp(random(-4f, 4f)));
++        });
+         wiggle.start();
+     }
+ 
++    private void chaosChildren(ViewGroup group, int baseDelayMs) {
++        int count = Math.min(group.getChildCount(), 16);
++        for (int i = 0; i < count; i++) {
++            View child = group.getChildAt(i);
++            int delay = baseDelayMs + randomInt(0, 65);
++            handler.postDelayed(() -> chaosSettle(child, 55, 145,
++                    0.2f, 2.1f, 90f, 55f, null), delay);
++        }
++    }
++
++    private Animator chaosTo(View view,
++                             float endScaleX, float endScaleY, float endRotation,
